@@ -1,0 +1,280 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  ADMIN
+  MANAGER
+  EMPLOYEE
+  EXECUTIVE
+}
+
+enum Frequency {
+  DAILY
+  WEEKLY
+  FORTNIGHTLY
+  MONTHLY
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum KPIEntryStatus {
+  DRAFT
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AggregationMethod {
+  SUM
+  AVERAGE
+}
+
+enum PMSRating {
+  EXCEEDS
+  MEETS
+  BELOW
+  DISAPPOINTING
+}
+
+model Tenant {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users             User[]
+  gapAnalyses       GapAnalysis[]
+  objectives        Objective[]
+  kpis              KPI[]
+  kpiEntries        KPIEntry[]
+  approvalWorkflows ApprovalWorkflow[]
+  pmsReviews        PMSReview[]
+  pmsRatingScales   PMSRatingScale[]
+  auditLogs         AuditLog[]
+  executiveRoles    ExecutiveRole[]
+
+  @@index([name])
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(EMPLOYEE)
+  tenantId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant                    Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdGapAnalyses        GapAnalysis[]        @relation("GapAnalysisCreator")
+  createdObjectives         Objective[]          @relation("ObjectiveCreator")
+  assignedObjectives        Objective[]          @relation("ObjectiveAssignee")
+  createdKPIs               KPI[]                @relation("KPICreator")
+  assignedKPIs              KPI[]                @relation("KPIAssignee")
+  kpiEntries                KPIEntry[]
+  submittedApprovals        ApprovalWorkflow[]   @relation("ApprovalSubmitter")
+  receivedApprovals         ApprovalWorkflow[]   @relation("ApprovalApprover")
+  pmsReviewsAsReviewee      PMSReview[]          @relation("PMSReviewee")
+  pmsReviewsAsReviewer      PMSReview[]          @relation("PMSReviewer")
+  auditLogs                 AuditLog[]
+  executiveRoles            ExecutiveRole[]
+
+  @@index([email])
+  @@index([tenantId])
+  @@index([role])
+}
+
+model GapAnalysis {
+  id          String   @id @default(cuid())
+  tenantId    String
+  title       String
+  description String?  @db.Text
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant    Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdBy User   @relation("GapAnalysisCreator", fields: [createdById], references: [id])
+
+  @@index([tenantId])
+  @@index([createdById])
+}
+
+model Objective {
+  id          String   @id @default(cuid())
+  tenantId    String
+  title       String
+  description String?  @db.Text
+  startDate   DateTime
+  endDate     DateTime
+  createdById String
+  assignedToId String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant     Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdBy  User   @relation("ObjectiveCreator", fields: [createdById], references: [id])
+  assignedTo User?  @relation("ObjectiveAssignee", fields: [assignedToId], references: [id])
+  kpis       KPI[]
+
+  @@index([tenantId])
+  @@index([createdById])
+  @@index([assignedToId])
+}
+
+model KPI {
+  id                 String            @id @default(cuid())
+  tenantId           String
+  objectiveId        String
+  title              String
+  description        String?           @db.Text
+  unit               String
+  target             Float
+  frequency          Frequency
+  aggregationMethod  AggregationMethod @default(SUM)
+  createdById        String
+  assignedToId       String?
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  tenant     Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  objective  Objective   @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+  createdBy  User        @relation("KPICreator", fields: [createdById], references: [id])
+  assignedTo User?       @relation("KPIAssignee", fields: [assignedToId], references: [id])
+  entries    KPIEntry[]
+
+  @@index([tenantId])
+  @@index([objectiveId])
+  @@index([createdById])
+  @@index([assignedToId])
+}
+
+model KPIEntry {
+  id        String         @id @default(cuid())
+  tenantId  String
+  kpiId     String
+  userId    String
+  month     String
+  value     Float
+  status    KPIEntryStatus @default(DRAFT)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  kpi    KPI    @relation(fields: [kpiId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([kpiId, userId, month])
+  @@index([tenantId])
+  @@index([kpiId])
+  @@index([userId])
+  @@index([status])
+}
+
+model ApprovalWorkflow {
+  id          String         @id @default(cuid())
+  tenantId    String
+  entityType  String
+  entityId    String
+  submittedBy String
+  approverId  String
+  status      ApprovalStatus @default(PENDING)
+  comments    String?        @db.Text
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  tenant      Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  submitter   User   @relation("ApprovalSubmitter", fields: [submittedBy], references: [id])
+  approver    User   @relation("ApprovalApprover", fields: [approverId], references: [id])
+
+  @@index([tenantId])
+  @@index([entityType, entityId])
+  @@index([submittedBy])
+  @@index([approverId])
+  @@index([status])
+}
+
+model PMSReview {
+  id          String     @id @default(cuid())
+  tenantId    String
+  revieweeId  String
+  reviewerId  String
+  period      String
+  rating      PMSRating
+  comments    String?    @db.Text
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  reviewee User   @relation("PMSReviewee", fields: [revieweeId], references: [id])
+  reviewer User   @relation("PMSReviewer", fields: [reviewerId], references: [id])
+
+  @@index([tenantId])
+  @@index([revieweeId])
+  @@index([reviewerId])
+  @@index([period])
+}
+
+model PMSRatingScale {
+  id          String   @id @default(cuid())
+  tenantId    String
+  rating      PMSRating
+  label       String
+  description String?  @db.Text
+  minScore    Float
+  maxScore    Float
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, rating])
+  @@index([tenantId])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  tenantId  String
+  userId    String
+  action    String
+  entityType String
+  entityId  String
+  metadata  String?  @db.Text
+  createdAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@index([tenantId])
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+model ExecutiveRole {
+  id        String   @id @default(cuid())
+  tenantId  String
+  userId    String
+  title     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([tenantId, userId])
+  @@index([tenantId])
+  @@index([userId])
+}
