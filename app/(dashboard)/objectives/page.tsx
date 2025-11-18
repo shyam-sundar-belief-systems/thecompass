@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { ChevronDown, ChevronRight, Target, TrendingUp } from 'lucide-react';
 import { OBJECTIVES_FIXTURE } from '@/fixtures/objectives';
 import { ProgressBarGradient } from '@/components/dashboard/ProgressBarGradient';
+import { CyclePanelController } from '@/components/layout/CyclePanelController';
 
 export default function ObjectivesPage() {
   const [expandedObjectives, setExpandedObjectives] = useState<Set<string>>(new Set());
@@ -20,8 +21,10 @@ export default function ObjectivesPage() {
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <>
+      <CyclePanelController show={true} />
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Objectives & KPIs</h1>
           <p className="text-gray-600 mt-1">{OBJECTIVES_FIXTURE.length} active objectives</p>
@@ -117,6 +120,7 @@ export default function ObjectivesPage() {
           );
         })}
       </div>
-    </div>
+      </div>
+    </>
   );
 }
