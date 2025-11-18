@@ -1,6 +1,9 @@
+'use client';
+
 import { Card } from '@/components/ui/card';
 import { Star } from 'lucide-react';
 import { PMS_REVIEWS, RATING_SCALES } from '@/fixtures/pms';
+import { CyclePanelController } from '@/components/layout/CyclePanelController';
 
 const RATING_COLORS = {
   EXCEEDS: 'bg-green-100 text-green-800 border-green-300',
@@ -11,7 +14,9 @@ const RATING_COLORS = {
 
 export default function PMSPage() {
   return (
-    <div className="p-6 space-y-6">
+    <>
+      <CyclePanelController show={false} />
+      <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Performance Reviews</h1>
@@ -67,6 +72,7 @@ export default function PMSPage() {
           </Card>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

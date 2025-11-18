@@ -6,6 +6,7 @@ import { CheckCircle, XCircle } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { approveKPIEntry, rejectKPIEntry } from '@/actions/kpi-actions';
 import { useRouter } from 'next/navigation';
+import { CyclePanelController } from '@/components/layout/CyclePanelController';
 
 interface KPIEntry {
   id: string;
@@ -89,8 +90,10 @@ export default function ApprovalsPage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
+    <>
+      <CyclePanelController show={false} />
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Approvals</h1>
           <p className="text-gray-600 mt-1">{entries.length} pending KPI entries</p>
@@ -154,6 +157,7 @@ export default function ApprovalsPage() {
           </div>
         </Card>
       )}
-    </div>
+      </div>
+    </>
   );
 }

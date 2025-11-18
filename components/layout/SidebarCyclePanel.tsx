@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, CalendarDays, Circle } from 'lucide-react';
+import { useCyclePanelStore } from '@/store/useCyclePanelStore';
 
 const MONTHS = [
   'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep',
@@ -10,7 +11,7 @@ const MONTHS = [
 
 export function SidebarCyclePanel() {
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [currentMonth, setCurrentMonth] = useState('Apr');
+  const { showCyclePanel, currentMonth, setCurrentMonth } = useCyclePanelStore();
 
   useEffect(() => {
     const saved = localStorage.getItem('belief_cycle_panel_collapsed');
@@ -18,7 +19,7 @@ export function SidebarCyclePanel() {
 
     const savedMonth = localStorage.getItem('belief_current_month');
     if (savedMonth) setCurrentMonth(savedMonth);
-  }, []);
+  }, [setCurrentMonth]);
 
   const toggleCollapse = () => {
     const newValue = !isCollapsed;
@@ -30,6 +31,10 @@ export function SidebarCyclePanel() {
     setCurrentMonth(month);
     localStorage.setItem('belief_current_month', month);
   };
+
+  if (!showCyclePanel) {
+    return null;
+  }
 
   if (isCollapsed) {
     return (
