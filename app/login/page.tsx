@@ -44,7 +44,7 @@ export default function LoginPage() {
         <div className="flex items-center justify-center gap-2 mb-8">
           <Building2 className="w-8 h-8 text-blue-600" />
           <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
-            Belief Systems
+            The Compass
           </h1>
         </div>
 
