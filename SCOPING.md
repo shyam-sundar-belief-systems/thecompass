@@ -1,4 +1,4 @@
-# Belief Systems - KPI Performance Management SaaS
+# The Compass - KPI Performance Management SaaS
 ## Project Scoping Document v1.2
 
 ---
