@@ -109,7 +109,7 @@ export function TopBar() {
         <Link href="/dashboard" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <Building2 className="w-6 h-6 text-blue-600" />
           <span className="font-bold text-lg bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
-            Belief Systems
+            The Compass
           </span>
         </Link>
 
