@@ -7,7 +7,7 @@ import { Toaster } from '@/components/ui/toaster';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Belief Systems - KPI Performance Management',
+  title: 'The Compass - KPI Performance Management',
   description: 'Enterprise KPI and Performance Management System',
 };
 
